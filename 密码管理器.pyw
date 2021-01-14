@@ -8,6 +8,7 @@ from matrix import *
 
 with open('encrypt_config.py', encoding='utf-8-sig') as f:
     exec(f.read())
+counter = 0
 
 
 class Root(Tk):
@@ -52,6 +53,8 @@ class Root(Tk):
         if filename:
             with open(filename, encoding='utf-8-sig') as f:
                 self.password = f.read()
+            self.current_msg.configure(text='已成功读取密钥文件，正在尝试解密中，请稍候')
+            self.update()
             self.decrypt()
 
     def choose_encrypt_file(self):
@@ -67,9 +70,12 @@ class Root(Tk):
                 self.current_msg.configure(
                     text='请把你想要加密的文件的编码格式改成UTF-8，否则无法打开')
                 return
+            self.current_msg.configure(text='已成功读取要加密的文件，正在加密中，请稍候')
+            self.update()
             self.encrypt(data)
 
     def encrypt(self, text):
+        global counter
         text_length = len(text)
         num = math.ceil(text_length**0.5)
         overflow = num**2 - text_length
@@ -84,10 +90,14 @@ class Root(Tk):
         try:
             encrypted_text = self.encrypt2(text, encrypt_mat, size)
         except:
-            pass
+            encrypted_text = ''
         while True:
             while not self.test_validity(encrypted_text, encrypt_mat, size,
                                          overflow, text):
+                counter += 1
+                self.current_msg.configure(
+                    text=f'当前随机矩阵无法加密，正在重新加密，第{counter}次')
+                self.update()
                 encrypt_mat = build(*size)
                 encrypt_mat.fillin(
                     [random.randint(*number_range) for i in range(length)])
@@ -106,6 +116,10 @@ class Root(Tk):
                     f.write(encrypted_text)
                 break
             except:
+                counter += 1
+                self.current_msg.configure(
+                    text=f'当前随机矩阵无法加密，正在重新加密，第{counter}次')
+                self.update()
                 encrypt_mat = build(*size)
                 encrypt_mat.fillin(
                     [random.randint(*number_range) for i in range(length)])
@@ -128,6 +142,8 @@ class Root(Tk):
         return ''.join([chr(j) for j in new_mat_element])
 
     def test_validity(self, text, mat, sizes, overflow, original_text):
+        if not text:
+            return False
         try:
             decrypt_text = self.decrypt2(text, mat, sizes)
             if overflow != 0:
@@ -230,12 +246,25 @@ class Root(Tk):
                                             text='重新加密',
                                             command=self.re_encrypt)
         self.re_encrypt_button.place(x=0, y=530)
+        self.go_back = ttk.Button(self, text='返回', command=self.go_back_func)
+        self.go_back.place(x=170, y=530)
+
+    def go_back_func(self):
+        self.destroy()
+        self.__init__()
 
     def re_encrypt(self):
+        self.current_msg.configure(text='')
+        self.current_msg.place(x=20, y=570)
         with open(self.password_text_filename, encoding='utf-8-sig') as f:
             data = f.read()
+        if data == self.password_text:
+            self.current_msg.configure(text='当前并无任何改动，无需重新加密')
+            self.update()
+            return
+        self.current_msg.configure(text='正在重新加密中，请稍候')
+        self.update()
         self.encrypt(data)
-        self.current_msg.place(x=110, y=530)
 
     def get_all_config_options(self, text):
         result = []
