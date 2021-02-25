@@ -24,12 +24,103 @@ class Root(Tk):
             self, text='请选择密钥文件', command=self.choose_password_filename)
         self.enter_password_file.place(x=200, y=200)
         self.current_msg = ttk.Label(self, text='当前暂无动作')
-        self.current_msg.place(x=200, y=250)
+        self.current_msg.place(x=200, y=530)
         self.encrypt_file = ttk.Button(self,
                                        text='加密文件',
                                        command=self.choose_encrypt_file)
         self.encrypt_file.place(x=50, y=150)
         self.password_text_filename = None
+        self.make_password_file = ttk.Button(self,
+                                             text='创建全新的密码文件',
+                                             command=self.write_password_file)
+        self.make_password_file.place(x=50, y=200)
+        self.write_password = False
+
+    def write_password_file(self):
+        if not self.write_password:
+            self.write_password = True
+            self.password_bar = Scrollbar(self)
+            self.password_bar.place(x=235, y=400, height=170, anchor=CENTER)
+            self.choose_password_options = Listbox(
+                self, yscrollcommand=self.password_bar.set)
+            self.choose_password_options.bind('<<ListboxSelect>>',
+                                              self.show_current_passwords)
+            self.password_dict = {}
+            self.choose_password_options.place(x=0, y=310, width=220)
+            self.password_bar.config(
+                command=self.choose_password_options.yview)
+            self.password_name = ttk.Label(self, text='')
+            self.password_name.place(x=300, y=300)
+            self.password_name_contents = Text(self,
+                                               undo=True,
+                                               autoseparators=True,
+                                               maxundo=-1)
+            self.password_contents = Text(self,
+                                          undo=True,
+                                          autoseparators=True,
+                                          maxundo=-1)
+            self.password_contents.place(x=350, y=200, width=400, height=200)
+            self.password_name_contents.place(x=350,
+                                              y=50,
+                                              width=400,
+                                              height=100)
+            self.password_name_contents_label = ttk.Label(self, text='当前密码名')
+            self.password_contents_label = ttk.Label(self, text='当前密码内容')
+            self.password_name_contents_label.place(x=350, y=20)
+            self.password_contents_label.place(x=350, y=170)
+            self.add_new_password = ttk.Button(self,
+                                               text='添加新的密码',
+                                               command=self.add_password)
+            self.add_new_password.place(x=50, y=250)
+            self.change_password_button = ttk.Button(
+                self, text='修改密码', command=self.change_password)
+            self.change_password_button.place(x=350, y=420)
+            self.delete_password_button = ttk.Button(
+                self, text='删除密码', command=self.delete_password)
+            self.delete_password_button.place(x=450, y=420)
+            self.output_password_button = ttk.Button(
+                self, text='加密输出', command=self.convert_password)
+            self.output_password_button.place(x=550, y=420)
+
+    def add_password(self):
+        password_name = self.password_name_contents.get('1.0', 'end-1c')
+        password_contents = self.password_contents.get('1.0', 'end-1c')
+        if password_name and password_contents:
+            self.password_dict[password_name] = password_contents
+            self.choose_password_options.delete(0, END)
+            for k in self.password_dict:
+                self.choose_password_options.insert(END, k)
+
+    def delete_password(self):
+        password_name = self.password_name_contents.get('1.0', 'end-1c')
+        password_contents = self.password_contents.get('1.0', 'end-1c')
+        if password_name in self.password_dict and password_contents:
+            del self.password_dict[password_name]
+            self.choose_password_options.delete(0, END)
+            for k in self.password_dict:
+                self.choose_password_options.insert(END, k)
+
+    def change_password(self):
+        password_name = self.choose_password_options.get(ANCHOR)
+        new_password_name = self.password_name_contents.get('1.0', 'end-1c')
+        password_contents = self.password_contents.get('1.0', 'end-1c')
+        if password_name and password_contents:
+            keys = list(self.password_dict.keys())
+            values = list(self.password_dict.values())
+            inds = keys.index(password_name)
+            keys[inds] = new_password_name
+            values[inds] = password_contents
+            self.password_dict = dict(zip(keys, values))
+            self.choose_password_options.delete(0, END)
+            for k in self.password_dict:
+                self.choose_password_options.insert(END, k)
+
+    def convert_password(self):
+        if self.password_dict:
+            current_text = '\n'
+            for each in self.password_dict:
+                current_text += f'{each} = "{self.password_dict[each]}"\n'
+            self.encrypt(current_text)
 
     def choose_password_text_filename(self):
         filename = filedialog.askopenfilename(initialdir='.',
@@ -168,7 +259,8 @@ class Root(Tk):
             self.results = decrypted_text
             exec(self.results, globals(), globals())
             self.reset_init()
-        except:
+        except Exception as e:
+            print(str(e))
             self.current_msg.configure(text='密钥文件格式不正确或者密钥错误')
             return
 
@@ -180,41 +272,73 @@ class Root(Tk):
         return ''.join([chr(x) for x in decrypt_mat_element])
 
     def reset_init(self):
+        if self.write_password:
+            self.password_bar.place_forget()
+            self.choose_password_options.place_forget()
+            self.password_name.place_forget()
+            self.password_contents.place_forget()
+            self.password_name_contents.place_forget()
+            self.password_name_contents_label.place_forget()
+            self.add_new_password.place_forget()
+            self.change_password_button.place_forget()
+            self.output_password_button.place_forget()
+        self.make_password_file.place_forget()
         self.current_msg.place_forget()
         self.choose_password_file.place_forget()
         self.enter_password_file.place_forget()
         self.encrypt_file.place_forget()
-        self.config_options_bar = Scrollbar(self)
-        self.config_options_bar.place(x=235, y=120, height=170, anchor=CENTER)
-        self.choose_config_options = Listbox(
-            self, yscrollcommand=self.config_options_bar.set)
-        self.choose_config_options.bind('<<ListboxSelect>>',
-                                        self.show_current_config_options)
+        self.current_msg.configure(text='')
+        self.current_msg.place(x=20, y=570)
         self.all_config_options = self.get_all_config_options(self.results)
-        self.options_num = len(self.all_config_options)
-        for k in self.all_config_options:
-            self.choose_config_options.insert(END, k)
-        self.choose_config_options.place(x=0, y=30, width=220)
-        self.config_options_bar.config(
-            command=self.choose_config_options.yview)
-        self.config_name = ttk.Label(self, text='')
-        self.config_name.place(x=300, y=20)
-        self.config_contents = Text(self,
-                                    undo=True,
-                                    autoseparators=True,
-                                    maxundo=-1)
-        self.config_contents.bind('<KeyRelease>', self.config_change)
-        self.config_contents.place(x=350, y=50, width=400, height=400)
-        self.choose_filename_button = ttk.Button(self,
-                                                 text='choose filename',
-                                                 command=self.choose_filename)
-        self.choose_directory_button = ttk.Button(
-            self, text='choose directory', command=self.choose_directory)
-        self.choose_filename_button.place(x=0, y=250)
-        self.choose_directory_button.place(x=0, y=320)
-        self.save = ttk.Button(self, text="save", command=self.save_current)
-        self.save.place(x=0, y=400)
-        self.saved_text = ttk.Label(text='saved')
+        self.password_dict = {
+            each: eval(each)
+            for each in self.all_config_options
+        }
+
+        self.password_bar = Scrollbar(self)
+        self.password_bar.place(x=235, y=140, height=170, anchor=CENTER)
+        self.choose_password_options = Listbox(
+            self, yscrollcommand=self.password_bar.set)
+        self.choose_password_options.bind('<<ListboxSelect>>',
+                                          self.show_current_passwords)
+        self.choose_password_options.place(x=0, y=50, width=220)
+        self.password_bar.config(command=self.choose_password_options.yview)
+        self.password_name = ttk.Label(self, text='')
+        self.password_name.place(x=300, y=300)
+        self.password_name_contents = Text(self,
+                                           undo=True,
+                                           autoseparators=True,
+                                           maxundo=-1)
+        self.password_contents = Text(self,
+                                      undo=True,
+                                      autoseparators=True,
+                                      maxundo=-1)
+        self.password_contents.place(x=350, y=200, width=400, height=200)
+        self.password_name_contents.place(x=350, y=50, width=400, height=100)
+        self.password_name_contents_label = ttk.Label(self, text='当前密码名')
+        self.password_contents_label = ttk.Label(self, text='当前密码内容')
+        self.password_name_contents_label.place(x=350, y=20)
+        self.password_contents_label.place(x=350, y=170)
+        self.add_new_password = ttk.Button(self,
+                                           text='添加新的密码',
+                                           command=self.add_password)
+        self.add_new_password.place(x=50, y=250)
+        self.change_password_button = ttk.Button(self,
+                                                 text='修改密码',
+                                                 command=self.change_password)
+        self.change_password_button.place(x=350, y=420)
+        self.delete_password_button = ttk.Button(self,
+                                                 text='删除密码',
+                                                 command=self.delete_password)
+        self.delete_password_button.place(x=450, y=420)
+        self.output_password_button = ttk.Button(self,
+                                                 text='加密输出',
+                                                 command=self.convert_password)
+        self.output_password_button.place(x=550, y=420)
+        self.choose_password_options.delete(0, END)
+        for k in self.password_dict:
+            self.choose_password_options.insert(END, k)
+
         self.search_text = ttk.Label(self, text='search for password')
         self.search_text.place(x=0, y=450)
         self.search_contents = StringVar()
@@ -235,17 +359,6 @@ class Root(Tk):
         self.up_button.place(x=170, y=480)
         self.down_button.place(x=250, y=480)
         self.search_inds_list = []
-        self.value_dict = {i: str(eval(i)) for i in self.all_config_options}
-        self.choose_bool1 = ttk.Button(
-            self, text='True', command=lambda: self.insert_bool('True'))
-        self.choose_bool2 = ttk.Button(
-            self, text='False', command=lambda: self.insert_bool('False'))
-        self.choose_bool1.place(x=120, y=270)
-        self.choose_bool2.place(x=220, y=270)
-        self.re_encrypt_button = ttk.Button(self,
-                                            text='重新加密',
-                                            command=self.re_encrypt)
-        self.re_encrypt_button.place(x=0, y=530)
         self.go_back = ttk.Button(self, text='返回', command=self.go_back_func)
         self.go_back.place(x=170, y=530)
 
@@ -291,7 +404,7 @@ class Root(Tk):
         else:
             next_var_ind = -1
         if is_str:
-            text_ls[var_ind:next_var_ind] = f" = '{new}'"
+            text_ls[var_ind:next_var_ind] = f' = "{new}"'
         else:
             text_ls[var_ind:next_var_ind] = f" = {new}"
         new_password = ''.join(text_ls)
@@ -307,13 +420,13 @@ class Root(Tk):
     def config_change(self, e):
         try:
             current = self.config_contents.get('1.0', 'end-1c')
-            current = literal_eval(current)
-            if type(current) == str:
-                current = f"'{current}'"
             current_config = self.choose_config_options.get(ANCHOR)
-            exec(f'{current_config} = {current}', globals(), globals())
+            exec(f'{current_config} = "{current}"', globals(), globals())
         except:
             pass
+
+    def password_change(self):
+        pass
 
     def change_search_inds(self, num):
         self.search_inds += num
@@ -324,39 +437,50 @@ class Root(Tk):
             if self.search_inds >= search_num:
                 self.search_inds = search_num - 1
             first = self.search_inds_list[self.search_inds]
-            self.choose_config_options.selection_clear(0, END)
-            self.choose_config_options.selection_set(first)
-            self.choose_config_options.selection_anchor(first)
-            self.choose_config_options.see(first)
+            self.choose_password_options.selection_clear(0, END)
+            self.choose_password_options.selection_set(first)
+            self.choose_password_options.selection_anchor(first)
+            self.choose_password_options.see(first)
             self.show_current_config_options(0)
 
     def search(self, *args):
         current = self.search_contents.get()
+        keys = list(self.password_dict.keys())
         self.search_inds_list = [
-            i for i in range(self.options_num)
-            if current in self.all_config_options[i]
+            i for i in range(len(keys)) if current in keys[i]
         ]
         if self.search_inds_list:
             self.search_inds = 0
             first = self.search_inds_list[self.search_inds]
-            self.choose_config_options.selection_clear(0, END)
-            self.choose_config_options.selection_set(first)
-            self.choose_config_options.selection_anchor(first)
-            self.choose_config_options.see(first)
+            self.choose_password_options.selection_clear(0, END)
+            self.choose_password_options.selection_set(first)
+            self.choose_password_options.selection_anchor(first)
+            self.choose_password_options.see(first)
             self.show_current_config_options(0)
         else:
-            self.choose_config_options.selection_clear(0, END)
+            self.choose_password_options.selection_clear(0, END)
 
     def show_current_config_options(self, e):
-        current_config = self.choose_config_options.get(ANCHOR)
-        self.config_name.configure(text=current_config)
-        self.config_contents.delete('1.0', END)
-        current_config_value = eval(current_config)
-        if type(current_config_value) == str:
-            current_config_value = f"'{current_config_value}'"
-        else:
-            current_config_value = str(current_config_value)
-        self.config_contents.insert(END, current_config_value)
+        current_config = self.choose_password_options.get(ANCHOR)
+        self.password_name_contents.delete('1.0', END)
+        self.password_name_contents.insert(END, current_config)
+        self.password_contents.delete('1.0', END)
+        current_config_value = self.password_dict[current_config]
+        #if type(current_config_value) == str:
+        #current_config_value = f"'{current_config_value}'"
+        #else:
+        #current_config_value = str(current_config_value)
+        self.password_contents.insert(END, current_config_value)
+
+    def show_current_passwords(self, e):
+        current_password = self.choose_password_options.get(ANCHOR)
+        if current_password in self.password_dict:
+
+            self.password_name_contents.delete('1.0', END)
+            self.password_name_contents.insert(END, current_password)
+            self.password_contents.delete('1.0', END)
+            current_password_value = self.password_dict[current_password]
+            self.password_contents.insert(END, current_password_value)
 
     def choose_filename(self):
         filename = filedialog.askopenfilename(initialdir='.',
@@ -375,24 +499,6 @@ class Root(Tk):
         self.config_contents.delete('1.0', END)
         self.config_contents.insert(END, f"'{directory}'")
         self.config_change(0)
-
-    def show_saved(self):
-        self.saved_text.place(x=140, y=400)
-        self.after(1000, self.saved_text.place_forget)
-
-    def save_current(self):
-        changed = False
-        for each in self.all_config_options:
-            current_value = eval(each, globals())
-            current_value_str = str(current_value)
-            before_value = self.value_dict[each]
-            if current_value_str != before_value:
-                self.change(self.results, each, current_value_str,
-                            type(current_value) == str)
-                self.value_dict[each] = current_value_str
-                changed = True
-        if changed:
-            self.show_saved()
 
 
 root = Root()
