@@ -1,6 +1,6 @@
 # Settings
 
-number_range = (1, 2)
+number_range = (0, 3)
 encrypt_file_format = 'utf-8-sig'
 encrypting_format = 'utf-8-sig'
 encrypt_file_extension = 'txt'
