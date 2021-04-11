@@ -81,6 +81,10 @@ class Root(Tk):
             self.output_password_button = ttk.Button(
                 self, text='加密输出', command=self.convert_password)
             self.output_password_button.place(x=550, y=420)
+            self.go_back_button = ttk.Button(self,
+                                             text='返回',
+                                             command=self.go_back_func)
+            self.go_back_button.place(x=650, y=420)
 
     def add_password(self):
         password_name = self.password_name_contents.get('1.0', 'end-1c')
@@ -117,10 +121,10 @@ class Root(Tk):
 
     def convert_password(self):
         if self.password_dict:
-            current_text = '\n'
+            current_text = {}
             for each in self.password_dict:
-                current_text += f'{each} = "{self.password_dict[each]}"\n'
-            self.encrypt(current_text)
+                current_text[each] = self.password_dict[each]
+            self.encrypt(str(current_text))
 
     def choose_password_text_filename(self):
         filename = filedialog.askopenfilename(initialdir='.',
@@ -256,13 +260,12 @@ class Root(Tk):
             decrypted_text = self.decrypt2(text, mat_decrypt, mat_size)
             if overflow != 0:
                 decrypted_text = decrypted_text[:-overflow]
-            self.results = decrypted_text
-            exec(self.results, globals(), globals())
+            self.results = eval(decrypted_text)
             self.reset_init()
         except Exception as e:
             print(str(e))
             self.current_msg.configure(text='密钥文件格式不正确或者密钥错误')
-            return
+        return
 
     def decrypt2(self, text, mat, sizes):
         text_list = [ord(i) for i in text]
@@ -289,12 +292,7 @@ class Root(Tk):
         self.encrypt_file.place_forget()
         self.current_msg.configure(text='')
         self.current_msg.place(x=20, y=570)
-        self.all_config_options = self.get_all_config_options(self.results)
-        self.password_dict = {
-            each: eval(each)
-            for each in self.all_config_options
-        }
-
+        self.password_dict = self.results
         self.password_bar = Scrollbar(self)
         self.password_bar.place(x=235, y=140, height=170, anchor=CENTER)
         self.choose_password_options = Listbox(
@@ -378,39 +376,6 @@ class Root(Tk):
         self.current_msg.configure(text='正在重新加密中，请稍候')
         self.update()
         self.encrypt(data)
-
-    def get_all_config_options(self, text):
-        result = []
-        N = len(text)
-        for i in range(N):
-            current = text[i]
-            if current == '\n':
-                if i + 1 < N:
-                    next_character = text[i + 1]
-                    if next_character.isalpha():
-                        inds = text[i + 1:].index('=') - 1
-                        current_config_options = text[i + 1:i + 1 + inds]
-                        result.append(current_config_options)
-        return result
-
-    def change(self, text, var, new, is_str=True):
-        text_ls = list(text)
-        var_len = len(var) + 1
-        var_ind = text.index('\n' + var + ' ') + var_len
-        current_var_ind = self.all_config_options.index(var)
-        if current_var_ind < len(self.all_config_options) - 1:
-            next_var = self.all_config_options[current_var_ind + 1]
-            next_var_ind = text.index('\n' + next_var + ' ')
-        else:
-            next_var_ind = -1
-        if is_str:
-            text_ls[var_ind:next_var_ind] = f' = "{new}"'
-        else:
-            text_ls[var_ind:next_var_ind] = f" = {new}"
-        new_password = ''.join(text_ls)
-        with open(self.password_text_filename, 'w', encoding='utf-8-sig') as f:
-            f.write(new_password)
-        self.results = new_password
 
     def insert_bool(self, content):
         self.config_contents.delete('1.0', END)
