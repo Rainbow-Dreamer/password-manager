@@ -1,4 +1,30 @@
+# password-manager
+
+[中文](#密码管理器) English
+
+This is my personal original password manager, using my own original random matrix encryption algorithm to encrypt your password with a very high degree of encryption, the key is a matrix of random numbers, and the dimension of the matrix is related to the total size of your password file.
+
+On the main interface, you can create a password file by clicking the `Create New Password File` button, and then you can click the `Encrypted Output` button to format the generated password text, then perform matrix encryption and output the cipher text and key file.  
+
+You can also write your own password text and then click the `Encrypt File` button to encrypt it, but this password manager has certain requirements for the format of the encrypted password text. First of all, your file should be a text file (.txt file), and then the encoding format must be UTF-8, otherwise it cannot be encrypted. The format of the password file is a python dictionary, which is
+```python
+{'111': '222', 'aaa': 'bbb', ...}
+```
+format, with the keys and values being strings for the name of the password and the content of the password, respectively.
+
+Each time the encrypted password file is read and the key file is successfully decrypted, it will display your password in a directory that  
+
+(If the password file is not written in this format before encryption, it will not be displayed properly during decryption and will show decryption failure)  
+
+You can add, delete and check the password, then remember to re-encrypt the saved password by clicking the `encrypt output` button, you will get a brand new cipher text and key file.  
+
+Please keep the key file and the ciphertext file well, and the plaintext file can be deleted.  
+
+The file name of the cipher file generated after each encryption is `password.txt`, and the file name of the key file is `matrix_password.txt`.
+
 # 密码管理器
+
+中文 [English](#password-manager)
 
 这是我个人原创的密码管理器，采用自己原创的随机矩阵加密算法加密你的密码，加密程度非常高，密钥是随机数的矩阵，矩阵的维度和你的密码文件的总大小有关。
 
