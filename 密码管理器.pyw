@@ -12,6 +12,7 @@ counter = 0
 
 
 class Root(Tk):
+
     def __init__(self):
         super(Root, self).__init__()
         self.title("密码管理器")
@@ -127,8 +128,7 @@ class Root(Tk):
             self.encrypt(str(current_text))
 
     def choose_password_text_filename(self):
-        filename = filedialog.askopenfilename(initialdir='.',
-                                              title="请选择密码文件",
+        filename = filedialog.askopenfilename(title="请选择密码文件",
                                               filetype=(("all files",
                                                          "*.*"), ))
         if filename:
@@ -141,8 +141,7 @@ class Root(Tk):
         if not self.password_text:
             self.current_msg.configure(text='请先选择密码文件')
             return
-        filename = filedialog.askopenfilename(initialdir='.',
-                                              title="请选择密钥文件",
+        filename = filedialog.askopenfilename(title="请选择密钥文件",
                                               filetype=(("all files",
                                                          "*.*"), ))
         if filename:
@@ -153,8 +152,7 @@ class Root(Tk):
             self.decrypt()
 
     def choose_encrypt_file(self):
-        filename = filedialog.askopenfilename(initialdir='.',
-                                              title="请选择想要加密的文件",
+        filename = filedialog.askopenfilename(title="请选择想要加密的文件",
                                               filetype=(("all files",
                                                          "*.*"), ))
         if filename:
@@ -448,8 +446,7 @@ class Root(Tk):
             self.password_contents.insert(END, current_password_value)
 
     def choose_filename(self):
-        filename = filedialog.askopenfilename(initialdir='.',
-                                              title="choose filename",
+        filename = filedialog.askopenfilename(title="choose filename",
                                               filetype=(("all files",
                                                          "*.*"), ))
         self.config_contents.delete('1.0', END)
@@ -457,10 +454,7 @@ class Root(Tk):
         self.config_change(0)
 
     def choose_directory(self):
-        directory = filedialog.askdirectory(
-            initialdir='.',
-            title="choose directory",
-        )
+        directory = filedialog.askdirectory(title="choose directory", )
         self.config_contents.delete('1.0', END)
         self.config_contents.insert(END, f"'{directory}'")
         self.config_change(0)
