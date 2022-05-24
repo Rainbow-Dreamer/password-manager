@@ -6,7 +6,7 @@ import math
 import random
 from matrix import *
 
-with open('encrypt_config.py', encoding='utf-8-sig') as f:
+with open('encrypt_config.py', encoding='utf-8') as f:
     exec(f.read())
 counter = 0
 
@@ -133,7 +133,7 @@ class Root(Tk):
                                                          "*.*"), ))
         if filename:
             self.password_text_filename = filename
-            with open(filename, encoding='utf-8-sig') as f:
+            with open(filename, encoding='utf-8') as f:
                 self.password_text = f.read()
             self.current_msg.configure(text='已成功读取密码文件，请选择密钥文件')
 
@@ -145,7 +145,7 @@ class Root(Tk):
                                               filetype=(("all files",
                                                          "*.*"), ))
         if filename:
-            with open(filename, encoding='utf-8-sig') as f:
+            with open(filename, encoding='utf-8') as f:
                 self.password = f.read()
             self.current_msg.configure(text='已成功读取密钥文件，正在尝试解密中，请稍候')
             self.update()
@@ -157,7 +157,7 @@ class Root(Tk):
                                                          "*.*"), ))
         if filename:
             try:
-                with open(filename, encoding='utf-8-sig') as f:
+                with open(filename, encoding='utf-8') as f:
                     data = f.read()
             except:
                 self.current_msg.configure(
@@ -202,10 +202,9 @@ class Root(Tk):
                 except:
                     pass
             try:
-                with open('matrix_password.txt', 'w',
-                          encoding='utf-8-sig') as f:
+                with open('matrix_password.txt', 'w', encoding='utf-8') as f:
                     f.write(str((encrypt_mat.element(), num, overflow)))
-                with open('password.txt', 'w', encoding='utf-8-sig') as f:
+                with open('password.txt', 'w', encoding='utf-8') as f:
                     f.write(encrypted_text)
                 break
             except:
@@ -365,7 +364,7 @@ class Root(Tk):
     def re_encrypt(self):
         self.current_msg.configure(text='')
         self.current_msg.place(x=20, y=570)
-        with open(self.password_text_filename, encoding='utf-8-sig') as f:
+        with open(self.password_text_filename, encoding='utf-8') as f:
             data = f.read()
         if data == self.password_text:
             self.current_msg.configure(text='当前并无任何改动，无需重新加密')
