@@ -129,8 +129,7 @@ class Root(Tk):
 
     def choose_password_text_filename(self):
         filename = filedialog.askopenfilename(title="请选择密码文件",
-                                              filetype=(("all files",
-                                                         "*.*"), ))
+                                              filetypes=(("all files", "*"), ))
         if filename:
             self.password_text_filename = filename
             with open(filename, encoding='utf-8') as f:
@@ -142,8 +141,7 @@ class Root(Tk):
             self.current_msg.configure(text='请先选择密码文件')
             return
         filename = filedialog.askopenfilename(title="请选择密钥文件",
-                                              filetype=(("all files",
-                                                         "*.*"), ))
+                                              filetypes=(("all files", "*"), ))
         if filename:
             with open(filename, encoding='utf-8') as f:
                 self.password = f.read()
@@ -153,8 +151,7 @@ class Root(Tk):
 
     def choose_encrypt_file(self):
         filename = filedialog.askopenfilename(title="请选择想要加密的文件",
-                                              filetype=(("all files",
-                                                         "*.*"), ))
+                                              filetypes=(("all files", "*"), ))
         if filename:
             try:
                 with open(filename, encoding='utf-8') as f:
@@ -446,8 +443,7 @@ class Root(Tk):
 
     def choose_filename(self):
         filename = filedialog.askopenfilename(title="choose filename",
-                                              filetype=(("all files",
-                                                         "*.*"), ))
+                                              filetypes=(("all files", "*"), ))
         self.config_contents.delete('1.0', END)
         self.config_contents.insert(END, f"'{filename}'")
         self.config_change(0)
