@@ -1,4 +1,4 @@
-﻿from tkinter import *
+from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 from ast import literal_eval
@@ -73,6 +73,7 @@ class Root(Tk):
             self.choose_password_options.insert(current_ind, new_password_name)
             self.choose_password_options.selection_set(current_ind)
             self.choose_password_options.selection_anchor(current_ind)
+            self.choose_password_options.see(current_ind)
 
     def ask_save_password(self):
         if self.current_ask_save_password_window is not None and self.current_ask_save_password_window.winfo_exists(
